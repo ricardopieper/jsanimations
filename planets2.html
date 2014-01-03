@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+<style type="text/css">
+
+    *{margin:0;padding:0;}
+    #c {display:block; background:#000;}
+    
+    
+    
+</style>
+
+<script type="text/javascript">
+
+    window.onload=function()
+    {
+        var canvas = document.getElementById("c");
+        var ctx = canvas.getContext("2d");
+       
+        
+        var W = window.innerWidth;
+        var H = window.innerHeight;
+        
+        canvas.width = W;
+        canvas.height= H;
+        
+        var pi2 = Math.PI * 2;
+         
+        var particles = [];
+     
+		for (var i = 0; i<10; i++)
+		{
+			particles.push(new Particle(i));	
+		}
+		
+		var physics = {
+			gravitationalFieldRatio: 5,
+			maxSpeed: 5,
+			universeGravity : 500
+		}
+		
+		 
+		function Particle(name)
+		{
+			
+			this.radius = 5 + (20 * Math.random());	
+			
+			this.x = W * Math.random();
+			this.y = W * Math.random();
+			
+			this.name = name;
+			
+			this.gravitationalField = function()
+			{
+				return this.radius * physics.gravitationalFieldRatio;	
+			}
+			this.gravity = function()
+			{
+				return this.radius / physics.universeGravity;	
+			}
+			
+			var r = Math.round(Math.random() * 255);
+			var g = Math.round(Math.random() * 255);
+			var b = Math.round(Math.random() * 255);
+			var a = 0.1;//Math.random();
+
+			
+			
+			this.gravRGB = "rgba("+r+","+g+","+b+","+a+")";
+			
+			this.draw = function()
+			{
+				ctx.beginPath();
+				ctx.fillStyle="white";
+				ctx.arc(this.x,this.y, this.radius,pi2, false);
+				ctx.fill()	
+				
+				ctx.beginPath();
+				ctx.fillStyle=this.gravRGB;
+				ctx.arc(this.x,this.y, this.gravitationalField(),pi2, false);
+				ctx.fill()	
+				
+			}
+			
+			
+			this.distanceFrom = function(otherParticle)
+            {
+				var distY = this.y - otherParticle.y;
+				
+				if (distY == 0) alert(this.y.toString() + ", "+otherParticle.y);
+				
+				
+				var distX = this.x - otherParticle.x;
+				
+                return Math.sqrt(distY * distY + distX * distX);  
+            }
+			
+			var min = -2.5, max = 5;
+			  
+			this.speedX = min + (Math.random() * max)
+			this.speedY = min + (Math.random() * max)
+			
+			this.update = function()
+			{
+			
+				this.x += this.speedX;
+				this.y += this.speedY;
+				
+				
+				if (this.x > W) this.x = 0;   
+                if (this.x < 0) this.x = W;
+                if (this.y > H) this.y = 0;
+                if (this.y < 0) this.y = H; 
+				
+				//manage gravity
+				
+				for (var i=0;i<particles.length;i++)
+				{
+					var other = particles[i];
+					
+					//this particle will pull the other particle towards itself only if the other particle is inside the gravity field
+					if (other != this) //a particle doesnt influence itself
+					{
+					
+				
+						if (this.distanceFrom(other) < this.gravitationalField()+other.radius)
+						{
+							
+							//is the other particle left from this?
+							var isLeft = other.x < this.x;
+							//is the other particle downards this?
+							var isDown = other.y > this.y;
+													
+							if (isLeft)
+							{
+								//will increase its velocity only if this's speed is below than physics.maxSpeed
+								if (other.speedX < physics.maxSpeed) other.speedX += this.gravity();	
+							}
+							else 
+							{
+								if (other.speedX*-1 < physics.maxSpeed) other.speedX -= this.gravity();  
+							}
+							
+							
+							if (isDown)
+							{
+								if (other.speedY < physics.maxSpeed) other.speedY -= this.gravity();	
+							}
+							else 
+							{
+								if (other.speedX*-1 < physics.maxSpeed) other.speedY += this.gravity();  
+							}
+														
+						}
+					}
+				}
+			}
+		}
+		
+		function render()
+		{
+			
+			ctx.fillStyle="black";
+			ctx.clearRect(0,0,W,H);
+			for (var i = 0; i<particles.length;i++)
+			{
+				var p= particles[i];
+				p.draw();
+				p.update();
+			}
+			
+			
+		}
+		setInterval(render, 30);
+		
+		
+		
+	}
+    
+</script>
+    
+</head>
+<body>
+    <canvas id='c'></canvas>
+    
+</body>
+</html>
