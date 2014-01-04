@@ -29,25 +29,30 @@
          
         var particles = [];
      
-		for (var i = 0; i<10; i++)
+		for (var i = 0; i<2; i++)
 		{
 			particles.push(new Particle(i));	
+		}
+		
+		function random(from, to)
+		{
+			return (Math.random() * (to-from+1)) + from	
 		}
 		
 		var physics = {
 			gravitationalFieldRatio: 5,
 			maxSpeed: 5,
-			universeGravity : 500
+			universeGravity : 400
 		}
 		
 		 
 		function Particle(name)
 		{
 			
-			this.radius = 5 + (20 * Math.random());	
+			this.radius = 25 + (50 * Math.random());	
 			
-			this.x = W * Math.random();
-			this.y = W * Math.random();
+			this.x = random(1+this.radius, W+1-this.radius);
+			this.y = random(1+this.radius, H+1-this.radius);
 			
 			this.name = name;
 			
@@ -88,9 +93,7 @@
             {
 				var distY = this.y - otherParticle.y;
 				
-				if (distY == 0) alert(this.y.toString() + ", "+otherParticle.y);
-				
-				
+								
 				var distX = this.x - otherParticle.x;
 				
                 return Math.sqrt(distY * distY + distX * distX);  
@@ -98,8 +101,11 @@
 			
 			var min = -2.5, max = 5;
 			  
-			this.speedX = min + (Math.random() * max)
-			this.speedY = min + (Math.random() * max)
+			this.speedX = random(-2.5,5);
+			this.speedY = random(-2.5,5);
+			
+			
+			
 			
 			this.update = function()
 			{
@@ -108,10 +114,10 @@
 				this.y += this.speedY;
 				
 				
-				if (this.x > W) this.x = 0;   
-                if (this.x < 0) this.x = W;
-                if (this.y > H) this.y = 0;
-                if (this.y < 0) this.y = H; 
+				if (this.x+this.radius > W) this.speedX *= -1;   
+                if (this.x-this.radius < 0) this.speedX *= -1;
+                if (this.y+this.radius > H) this.speedY *= -1;
+                if (this.y-this.radius < 0) this.speedY *= -1; 
 				
 				//manage gravity
 				
@@ -120,10 +126,8 @@
 					var other = particles[i];
 					
 					//this particle will pull the other particle towards itself only if the other particle is inside the gravity field
-					if (other != this) //a particle doesnt influence itself
+					if (other != this) //a particle doesnt influence itself. '!=' will check for instance inequality.		
 					{
-					
-				
 						if (this.distanceFrom(other) < this.gravitationalField()+other.radius)
 						{
 							
@@ -153,6 +157,15 @@
 							}
 														
 						}
+						
+						
+						//check for collision, will just invert the speed.
+						if (this.distanceFrom(other) < this.radius+other.radius)
+						{
+							this.speedX *= -1;   
+     						this.speedY *= -1; 
+						}
+							
 					}
 				}
 			}
